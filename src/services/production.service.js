@@ -1,22 +1,5 @@
 const db = require('../database/database');
 
-const productions = [
-  {
-    id: 1,
-    produto: 'Produto A',
-    quantidade: 850,
-    meta: 1000,
-    status: 'em_producao'
-  },
-  {
-    id: 2,
-    produto: 'Produto B',
-    quantidade: 1200,
-    meta: 1200,
-    status: 'concluido'
-  }
-];
-
 const getProductionSituation = (percentualMeta) => {
   if (percentualMeta < 70) {
     return 'critica';
