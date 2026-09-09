@@ -16,4 +16,13 @@ app.get('/', (req, res) => {
 app.use('/api', statusRoutes);
 app.use('/api', productionRoutes);
 
+app.use((req, res) => {
+  res.status(404).json({
+    erro: 'Rota não encontrada',
+    caminho: req.originalUrl
+  });
+});
+
+app.use(errorMiddleware);
+
 module.exports = app;
