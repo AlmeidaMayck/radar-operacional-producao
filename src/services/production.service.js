@@ -111,20 +111,36 @@ const createProduction = (production) => {
   }
 
   const percentualMeta =
-    (production.quantidade / production.meta) * 100;
+  (production.quantidade / production.meta) * 100;
 
-  const percentual = Number(percentualMeta.toFixed(2));
+    const percentual = Number(percentualMeta.toFixed(2));
 
-  const newProduction = {
-    id: productions.length + 1,
-    ...production,
+    const insert = db.prepare(`
+    INSERT INTO productions (
+        produto,
+        quantidade,
+        meta,
+        status
+    )
+    VALUES (?, ?, ?, ?)
+    `);
+
+    const result = insert.run(
+    production.produto,
+    production.quantidade,
+    production.meta,
+    production.status
+    );
+
+    return {
+    id: result.lastInsertRowid,
+    produto: production.produto,
+    quantidade: production.quantidade,
+    meta: production.meta,
+    status: production.status,
     percentualMeta: percentual,
     situacao: getProductionSituation(percentual)
-  };
-
-  productions.push(newProduction);
-
-  return newProduction;
+    };
 };
 
 const updateProduction = (id, production) => {
