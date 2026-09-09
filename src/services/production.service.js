@@ -227,19 +227,31 @@ const updateProduction = (id, production) => {
 };
 
 const deleteProduction = (id) => {
-  const index = productions.findIndex(
-    (production) => production.id === id
-  );
+  const production = db
+    .prepare('SELECT * FROM productions WHERE id = ?')
+    .get(id);
 
-  if (index === -1) {
+  if (!production) {
     return undefined;
   }
 
-  const deletedProduction = productions[index];
+  const deleteQuery = db.prepare(`
+    DELETE FROM productions
+    WHERE id = ?
+  `);
 
-  productions.splice(index, 1);
+  deleteQuery.run(id);
 
-  return deletedProduction;
+  const percentualMeta =
+    (production.quantidade / production.meta) * 100;
+
+  const percentual = Number(percentualMeta.toFixed(2));
+
+  return {
+    ...production,
+    percentualMeta: percentual,
+    situacao: getProductionSituation(percentual)
+  };
 };
 
 module.exports = {
