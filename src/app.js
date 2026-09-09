@@ -1,5 +1,7 @@
 const express = require('express');
+
 const statusRoutes = require('./routes/status.routes');
+const productionRoutes = require('./routes/production.routes');
 
 const app = express();
 
@@ -10,6 +12,6 @@ app.get('/', (req, res) => {
 });
 
 app.use('/api', statusRoutes);
-app.use('/', statusRoutes);
+app.use('/api', productionRoutes);
 
 module.exports = app;

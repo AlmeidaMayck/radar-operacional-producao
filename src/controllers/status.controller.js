@@ -1,8 +1,9 @@
+const { getSystemStatus } = require('../services/status.service');
+
 const getStatus = (req, res) => {
-  res.json({
-    status: 'online',
-    sistema: 'Radar Operacional de Produção'
-  });
+  const status = getSystemStatus();
+
+  res.json(status);
 };
 
 module.exports = {
