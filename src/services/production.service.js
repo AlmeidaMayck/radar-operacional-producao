@@ -144,11 +144,11 @@ const createProduction = (production) => {
 };
 
 const updateProduction = (id, production) => {
-  const index = productions.findIndex(
-    (production) => production.id === id
-  );
+  const existingProduction = db
+  .prepare('SELECT * FROM productions WHERE id = ?')
+  .get(id);
 
-  if (index === -1) {
+  if (!existingProduction) {
     return undefined;
   }
 
@@ -197,16 +197,33 @@ const updateProduction = (id, production) => {
 
   const percentual = Number(percentualMeta.toFixed(2));
 
-  const updatedProduction = {
+  const update = db.prepare(`
+    UPDATE productions
+    SET
+        produto = ?,
+        quantidade = ?,
+        meta = ?,
+        status = ?
+    WHERE id = ?
+   `);
+
+    update.run(
+    production.produto,
+    production.quantidade,
+    production.meta,
+    production.status,
+    id
+    );
+
+    return {
     id,
-    ...production,
+    produto: production.produto,
+    quantidade: production.quantidade,
+    meta: production.meta,
+    status: production.status,
     percentualMeta: percentual,
     situacao: getProductionSituation(percentual)
-  };
-
-  productions[index] = updatedProduction;
-
-  return updatedProduction;
+    };
 };
 
 const deleteProduction = (id) => {
