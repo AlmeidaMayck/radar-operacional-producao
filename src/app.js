@@ -1,10 +1,12 @@
 const express = require('express');
+const cors = require('cors');
 
 const statusRoutes = require('./routes/status.routes');
 const productionRoutes = require('./routes/production.routes');
 const errorMiddleware = require('./middlewares/error.middleware');
 
 const app = express();
+app.use(cors());
 
 app.use(express.json());
 app.use(errorMiddleware);
