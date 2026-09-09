@@ -15,6 +15,12 @@ const getProduction = (req, res) => {
 const getProductionByIdController = (req, res) => {
   const id = Number(req.params.id);
 
+  if (!Number.isInteger(id) || id <= 0) {
+    return res.status(400).json({
+      erro: 'ID deve ser um número inteiro positivo'
+    });
+  }
+
   const production = getProductionById(id);
 
   if (!production) {
@@ -42,6 +48,12 @@ const updateProductionController = (req, res) => {
   try {
     const id = Number(req.params.id);
 
+    if (!Number.isInteger(id) || id <= 0) {
+      return res.status(400).json({
+        erro: 'ID deve ser um número inteiro positivo'
+      });
+    }
+
     const production = updateProduction(id, req.body);
 
     if (!production) {
@@ -60,6 +72,12 @@ const updateProductionController = (req, res) => {
 
 const deleteProductionController = (req, res) => {
   const id = Number(req.params.id);
+
+  if (!Number.isInteger(id) || id <= 0) {
+    return res.status(400).json({
+      erro: 'ID deve ser um número inteiro positivo'
+    });
+  }
 
   const production = deleteProduction(id);
 
