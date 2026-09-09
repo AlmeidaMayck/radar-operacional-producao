@@ -149,6 +149,20 @@ A Api esta disponivel em:
 
 http://localhost:3000
 
+## Frontend ##
+
+instalar as dependencias:
+
+npm install
+
+Execucao:
+
+npm run dev
+
+O Front vai esta disponivel em:
+
+Local: http://localhost:5173/
+
 ### Testes ##
 
 Os endpoints foram testados utilizando o Tgunder Client no visual studio code
