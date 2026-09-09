@@ -158,4 +158,6 @@ Os endpoints foram testados utilizando o Tgunder Client no visual studio code
 Realizado com SQLite para permanencia dos dados.
 O banco é criado automaticamente durante a inicialização da aplicação.
 
+Questão de Arquitetura: Se amanhã descobríssemos que os dados das ordens vêm de um ERP externo por API e os apontamentos de produção vêm de outro sistema por webhook, o que você alteraria na arquitetura?
 
+Resposta: Faria a avaliação primaria e após identificação, adicionaria uma camada de integração no backend para consumir a API do ERP e receber os webhooks de proução. Esses dados seriam validados e padronizados antes de chegar as regras e negocio do banco. Tambem pode ser utilizada a implementação de autenticação, logs e controle de duplicidade nos webhoooks. Caso o volume aumentasse, poderia utilizar uma fila de mensagnes para desacoplar o recebimento do processamento.
