@@ -1,16 +1,61 @@
 const db = require('../database/database');
 
-const getProductionSituation = (percentualMeta) => {
-  if (percentualMeta < 70) {
-    return 'critica';
+const validateProductionData = (data) => {
+  const { produto, quantidade, meta } = data;
+
+  if (!produto) {
+    throw new Error('Produto é obrigatório');
   }
 
-  if (percentualMeta < 90) {
-    return 'atencao';
+  if (typeof produto !== 'string') {
+    throw new Error('Produto deve ser um texto');
   }
 
-  return 'normal';
+  if (quantidade === undefined) {
+    throw new Error('Quantidade é obrigatória');
+  }
+
+  if (typeof quantidade !== 'number' || !Number.isFinite(quantidade)) {
+    throw new Error('Quantidade deve ser um número válido');
+  }
+
+  if (quantidade < 0) {
+    throw new Error('Quantidade não pode ser negativa');
+  }
+
+  if (meta === undefined) {
+    throw new Error('Meta é obrigatória');
+  }
+
+  if (typeof meta !== 'number' || !Number.isFinite(meta)) {
+    throw new Error('Meta deve ser um número válido');
+  }
+
+  if (meta <= 0) {
+    throw new Error('Meta deve ser maior que zero');
+  }
 };
+
+const calculateProductionIndicators = (quantidade, meta) => {
+  const percentualMeta = Number(((quantidade / meta) * 100).toFixed(2));
+
+  let situacao;
+
+  if (percentualMeta < 70) {
+    situacao = 'critica';
+  } else if (percentualMeta < 90) {
+    situacao = 'atencao';
+  } else {
+    situacao = 'normal';
+  }
+
+  return {
+    percentualMeta,
+    situacao
+  };
+};
+
+
 
 const getProductionData = () => {
   const productions = db
@@ -18,15 +63,15 @@ const getProductionData = () => {
     .all();
 
   return productions.map((production) => {
-    const percentualMeta =
-      (production.quantidade / production.meta) * 100;
-
-    const percentual = Number(percentualMeta.toFixed(2));
+    const indicators = calculateProductionIndicators(
+    production.quantidade,
+    production.meta
+    );
 
     return {
-      ...production,
-      percentualMeta: percentual,
-      situacao: getProductionSituation(percentual)
+    ...production,
+    percentualMeta: indicators.percentualMeta,
+    situacao: indicators.situacao
     };
   });
 };
@@ -40,63 +85,25 @@ const getProductionById = (id) => {
     return undefined;
   }
 
-  const percentualMeta =
-    (production.quantidade / production.meta) * 100;
+  const indicators = calculateProductionIndicators(
+    production.quantidade,
+    production.meta
+    );
 
-  const percentual = Number(percentualMeta.toFixed(2));
-
-  return {
+    return {
     ...production,
-    percentualMeta: percentual,
-    situacao: getProductionSituation(percentual)
-  };
+    percentualMeta: indicators.percentualMeta,
+    situacao: indicators.situacao
+    };
 };
 
 const createProduction = (production) => {
-  if (!production.produto) {
-    throw new Error('O produto é obrigatório');
-  }
+  validateProductionData(production);
 
-  if (typeof production.produto !== 'string') {
-    throw new Error('O produto deve ser um texto');
-  }
-
-  if (production.quantidade === undefined) {
-    throw new Error('A quantidade é obrigatória');
-  }
-
-  if (typeof production.quantidade !== 'number') {
-    throw new Error('A quantidade deve ser um número');
-  }
-
-  if (!Number.isFinite(production.quantidade)) {
-    throw new Error('A quantidade deve ser um número válido');
-  }
-
-  if (production.meta === undefined) {
-    throw new Error('A meta é obrigatória');
-  }
-
-  if (typeof production.meta !== 'number') {
-    throw new Error('A meta deve ser um número');
-  }
-
-  if (!Number.isFinite(production.meta)) {
-    throw new Error('A meta deve ser um número válido');
-  }
-
-  if (production.quantidade < 0) {
-    throw new Error('A quantidade não pode ser negativa');
-  }
-
-  if (production.meta <= 0) {
-    throw new Error('A meta deve ser maior que zero');
-  }
-
-  const percentualMeta =
-  (production.quantidade / production.meta) * 100;
-
-    const percentual = Number(percentualMeta.toFixed(2));
+  const indicators = calculateProductionIndicators(
+    production.quantidade,
+    production.meta
+  );
 
     const insert = db.prepare(`
     INSERT INTO productions (
@@ -121,64 +128,26 @@ const createProduction = (production) => {
     quantidade: production.quantidade,
     meta: production.meta,
     status: production.status,
-    percentualMeta: percentual,
-    situacao: getProductionSituation(percentual)
+    percentualMeta: indicators.percentualMeta,
+    situacao: indicators.situacao
     };
 };
 
 const updateProduction = (id, production) => {
+  validateProductionData(production);
+
   const existingProduction = db
-  .prepare('SELECT * FROM productions WHERE id = ?')
-  .get(id);
+    .prepare('SELECT * FROM productions WHERE id = ?')
+    .get(id);
 
   if (!existingProduction) {
     return undefined;
   }
 
-  if (!production.produto) {
-    throw new Error('O produto é obrigatório');
-  }
-
-  if (typeof production.produto !== 'string') {
-    throw new Error('O produto deve ser um texto');
-  }
-
-  if (production.quantidade === undefined) {
-    throw new Error('A quantidade é obrigatória');
-  }
-
-  if (typeof production.quantidade !== 'number') {
-    throw new Error('A quantidade deve ser um número');
-  }
-
-  if (!Number.isFinite(production.quantidade)) {
-    throw new Error('A quantidade deve ser um número válido');
-  }
-
-  if (production.meta === undefined) {
-    throw new Error('A meta é obrigatória');
-  }
-
-  if (typeof production.meta !== 'number') {
-    throw new Error('A meta deve ser um número');
-  }
-
-  if (!Number.isFinite(production.meta)) {
-    throw new Error('A meta deve ser um número válido');
-  }
-
-  if (production.quantidade < 0) {
-    throw new Error('A quantidade não pode ser negativa');
-  }
-
-  if (production.meta <= 0) {
-    throw new Error('A meta deve ser maior que zero');
-  }
-
-  const percentualMeta =
-    (production.quantidade / production.meta) * 100;
-
-  const percentual = Number(percentualMeta.toFixed(2));
+  const indicators = calculateProductionIndicators(
+    production.quantidade,
+    production.meta
+  );
 
   const update = db.prepare(`
     UPDATE productions
@@ -190,23 +159,23 @@ const updateProduction = (id, production) => {
     WHERE id = ?
    `);
 
-    update.run(
+  update.run(
     production.produto,
     production.quantidade,
     production.meta,
     production.status,
     id
-    );
+  );
 
-    return {
+  return {
     id,
     produto: production.produto,
     quantidade: production.quantidade,
     meta: production.meta,
     status: production.status,
-    percentualMeta: percentual,
-    situacao: getProductionSituation(percentual)
-    };
+    percentualMeta: indicators.percentualMeta,
+    situacao: indicators.situacao
+  };
 };
 
 const deleteProduction = (id) => {
@@ -225,16 +194,16 @@ const deleteProduction = (id) => {
 
   deleteQuery.run(id);
 
-  const percentualMeta =
-    (production.quantidade / production.meta) * 100;
+  const indicators = calculateProductionIndicators(
+    production.quantidade,
+    production.meta
+    );
 
-  const percentual = Number(percentualMeta.toFixed(2));
-
-  return {
+    return {
     ...production,
-    percentualMeta: percentual,
-    situacao: getProductionSituation(percentual)
-  };
+    percentualMeta: indicators.percentualMeta,
+    situacao: indicators.situacao
+    };
 };
 
 module.exports = {
