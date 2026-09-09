@@ -1,3 +1,5 @@
+const db = require('../database/database');
+
 const productions = [
   {
     id: 1,
@@ -28,6 +30,10 @@ const getProductionSituation = (percentualMeta) => {
 };
 
 const getProductionData = () => {
+  const productions = db
+    .prepare('SELECT * FROM productions')
+    .all();
+
   return productions.map((production) => {
     const percentualMeta =
       (production.quantidade / production.meta) * 100;
@@ -43,9 +49,9 @@ const getProductionData = () => {
 };
 
 const getProductionById = (id) => {
-  const production = productions.find(
-    (production) => production.id === id
-  );
+  const production = db
+    .prepare('SELECT * FROM productions WHERE id = ?')
+    .get(id);
 
   if (!production) {
     return undefined;
